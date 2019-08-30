@@ -1,0 +1,46 @@
+﻿@page "/"
+@using Blazor.Extensions
+@using logR.Shared.Models
+@using BlazorVirtualScrolling
+@inject HubConnectionBuilder _hubConnectionBuilder
+@inject IUriHelper _uriHelper
+
+<logR.VirtualScroll style="height: 500px;" ItemType="string" Items="@messagesSimple" ItemHeight="50">
+    <div>@context</div>
+</logR.VirtualScroll>
+
+
+
+
+
+
+
+@functions {
+    HubConnection connection;
+    string Message = "";
+    IList<LogEvent> messages = new List<LogEvent>();
+    IList<string> messagesSimple = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var hubUri = _uriHelper.GetBaseUri().ToString() + "signalr/loghub";
+        connection = _hubConnectionBuilder.WithUrl(hubUri).Build();
+
+        connection.On<string>("newLogSimple", this.OnBroadcastMessageSimple);
+        await connection.StartAsync();
+    }
+
+
+    Task OnBroadcastMessageSimple(string message)
+    {
+        messagesSimple.Add(DateTime.Now.ToString() + "-" + message);
+
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    /*async Task SendMessage()
+    {
+        await connection.InvokeAsync("Send", "Blazor Client", Message);
+        Message = "";
+    }*/
+}
