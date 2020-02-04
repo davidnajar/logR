@@ -1,0 +1,28 @@
+﻿<Sidebar Data="@sidebarInfo" />
+
+@code{
+    Sidebar sidebar;
+
+    SidebarInfo sidebarInfo = new SidebarInfo
+    {
+        Brand = new SidebarBrandInfo
+        {
+            Text = "LogR"
+        },
+        Items = new List<SidebarItemInfo>
+    {
+            new SidebarItemInfo { To = "live", Text = "Live View" },
+            new SidebarItemInfo { To = "diagnostic", Text = "Diagnostic" },
+            new SidebarItemInfo
+            {
+                Text = "Settings",
+
+                SubItems = new List<SidebarItemInfo>
+            {
+                    new SidebarItemInfo { To = "email/inbox", Text = "General" },
+                    new SidebarItemInfo { To = "email/compose", Text = "Data Collectior" },
+                }
+            }
+        }
+    };
+}

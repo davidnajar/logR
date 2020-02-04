@@ -1,4 +1,4 @@
-﻿@*@page "/fetchdata"
+﻿@page "/fetchdata"
 @using logR.Shared
 @inject HttpClient Http
 
@@ -36,11 +36,11 @@ else
 }
 
 @code {
-    WeatherForecast[] forecasts;
+    private WeatherForecast[] forecasts;
 
     protected override async Task OnInitializedAsync()
     {
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
     }
 
-}*@
+}
