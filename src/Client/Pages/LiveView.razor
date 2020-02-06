@@ -1,17 +1,8 @@
 ﻿@page "/live"
+@using logR.Client.Pages.Components
 
 
-<h3>LiveView</h3>
-<div style="background">
-    @foreach (var msg in messages)
-    {
-        <div class="row">@msg</div>
-    }
-</div>
+<LogPanel></LogPanel>
 @code {
-    private string[] messages;
-    protected override async Task OnInitializedAsync()
-    {
-        messages = Enumerable.Range(0, 100).Select(p => $"{DateTime.Now.AddSeconds(-p).ToString("HH:mm:ss.fff")}\tWARN\t Error {p} in application").ToArray();
-    }
+
 }

@@ -1,3 +1,7 @@
+using logR.Server.Extensions;
+using logR.Server.Hubs;
+using logR.Server.Services;
+using logR.Server.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -14,18 +18,24 @@ namespace logR.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddSignalR();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+
+            services.AddTransient<ILogStorage, LogStorageService>();
+            services.AddTransient<ILogBroadcaster, LogBroadcastService>(); 
+            services.AddTransient<ILogProcessor, LogProcessorService>();
+            services.AddSingleton<LogServerReceiver>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseResponseCompression();
-
+            app.UseLogServerReceiver();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -33,14 +43,15 @@ namespace logR.Server
             }
 
             app.UseStaticFiles();
-            app.UseClientSideBlazorFiles<Client.Startup>();
+            app.UseClientSideBlazorFiles<Client.Program>();
 
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
-                endpoints.MapFallbackToClientSideBlazor<Client.Startup>("index.html");
+                endpoints.MapHub<LoggerHub>("/loggerHub");
+                endpoints.MapFallbackToClientSideBlazor<Client.Program>("index.html");
             });
         }
     }

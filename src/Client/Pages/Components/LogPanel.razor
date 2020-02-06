@@ -1,0 +1,177 @@
+﻿@using logR.Shared;
+@using Blazor.Extensions;
+@using Microsoft.AspNetCore.SignalR.Client 
+@inject IJSRuntime  jsRuntime;
+@inject HubConnectionBuilder hubConnectionBuilder 
+@inject NavigationManager navigationManager;
+<Styled @bind-ClassName="@logPanel" >
+    
+        background: black;
+        padding: 10px;
+    width: 100%;
+    overflow-anchor: none;
+    display: table;
+    height: 95vh;
+    @*<Rule background="@Colors.Black"
+          display="@Display.Table"
+          overflow_anchor
+          padding="10px"
+          width="100%" />*@
+</Styled>
+<Styled @bind-Classname="@anchor">
+    overflow-anchor: auto;
+    height: 1px;
+</Styled>
+<Styled @bind-ClassName="@logRow">
+    <Rule
+          display="@Display.TableRow"
+          font_family="Lucida Console, Monaco, monospace"
+          height="1em"/>
+</Styled>
+<Styled @bind-ClassName="@debug">
+    <Rule color="@Colors.Gray"
+          />
+</Styled>
+<Styled @bind-ClassName="@info">
+    <Rule color="@Colors.White"
+          />
+</Styled>
+<Styled @bind-ClassName="@warn">
+    <Rule color="@Colors.Yellow"
+         />
+</Styled><Styled @bind-ClassName="@error">
+    <Rule color="@Colors.Red"
+         />
+</Styled>
+<Styled @bind-ClassName="@cell">
+    <Rule display="@Display.TableCell" />
+
+</Styled>
+<Styled @bind-ClassName="@timeCell">
+    <Rule width="9%" min_width="24em"/>
+</Styled>
+<Styled @bind-ClassName="@logCell">
+    <Rule width="7%" />
+</Styled>
+<Styled @bind-ClassName="@severityCell">
+    <Rule width="6%" />
+</Styled>
+<Styled @bind-ClassName="@messageCell">
+    <Rule width="78%" />
+</Styled>
+
+<div class="@logPanel" id="logPanel">
+    @foreach (var msg in messages)
+    {
+        <div class="@GetClass(msg) @logRow" id="@msg.Id">
+            <div class="@cell  @timeCell ">
+                @msg.Time
+            </div>
+            <div class="@cell  @logCell ">
+                @msg.Logger
+            </div>
+            <div class="@cell  @severityCell ">
+                @msg.Severity
+            </div>
+            <div class="@cell  @messageCell ">
+                @msg.Message
+            </div>
+
+
+        </div>
+    }
+    <div id="anchor" class="@anchor"></div>
+</div>
+
+@code {
+    private string logPanel;
+    private string debug;
+    private string anchor;
+    private string info;
+    private string warn;
+    private string error;
+    private string cell;
+    private string timeCell;
+    private string logCell;
+    private string severityCell;
+    private string messageCell;
+    private string logRow;
+
+    private Guid _lastElement;
+
+    private List<LogEvent> messages;
+    HubConnection hubConnection;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        messages = new List<LogEvent>();
+
+        Console.WriteLine(navigationManager.ToAbsoluteUri("/loggerHub").ToString());
+        hubConnection =hubConnectionBuilder
+       .WithUrl(navigationManager.ToAbsoluteUri("/loggerHub").ToString())
+      .Build();
+
+        hubConnection.On<LogEvent>("NewLogEvent",async (evt) =>
+        {
+
+            await   AddLogEvent(evt);
+
+        });
+
+        await hubConnection.StartAsync();
+
+    }
+    private string GetClass(LogEvent evt)
+    {
+        switch (evt.Severity)
+        {
+            case Severity.Debug:
+                return debug;
+                break;
+
+            case Severity.Warn:
+
+                return warn;
+                break;
+            case Severity.Error:
+                return error;
+                break;
+            case Severity.Info:
+            default:
+                return info;
+                break;
+
+
+        }
+    }
+
+    protected async Task AddLogEvent(LogEvent evt)
+    {
+        Console.WriteLine("LogEvent received");
+
+        messages.Add(evt);
+
+        StateHasChanged();
+        //    ScrollToBottom();
+
+        Console.WriteLine("Item added");
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        await jsRuntime.InvokeVoidAsync("methods.scrollToAnchor");
+
+
+
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+    private void ScrollToBottom()
+    {
+
+        //jsRuntime.InvokeVoidAsync("window.scrollTo(0,document.querySelector('#logPanel').scrollHeight);");
+
+    }
+}
