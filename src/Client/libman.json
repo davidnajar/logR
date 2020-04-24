@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [{
+  "library": "popper.js@1.14.7",
+  "destination": "wwwroot/js/popper.js/",
+  "files": [
+    "popper.min.js",
+    "umd/popper-utils.js",
+    "umd/popper-utils.js.map",
+    "umd/popper-utils.min.js",
+    "umd/popper-utils.min.js.map",
+    "umd/popper.js",
+    "umd/popper.js.map",
+    "umd/popper.min.js",
+    "umd/popper.min.js.map",
+    "popper-utils.js",
+    "popper-utils.js.map",
+    "popper-utils.min.js",
+    "popper-utils.min.js.map",
+    "popper.js",
+    "popper.js.map",
+    "popper.min.js.map"
+  ]
+}
+,
+{
+  "library": "jquery@3.3.1",
+  "destination": "wwwroot/js/jquery/"
+}
+,
+{
+  "provider": "unpkg",
+  "library": "bootstrap@4.3.1",
+  "destination": "wwwroot/lib/bootstrap/"
+}
+,
+{
+  "library": "font-awesome@5.12.0",
+  "destination": "wwwroot/lib/font-awesome/",
+  "files": [
+    "css/all.min.css"
+  ]
+}
+]
+}

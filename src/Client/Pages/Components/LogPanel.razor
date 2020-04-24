@@ -29,7 +29,7 @@
           height="1em"/>
 </Styled>
 <Styled @bind-ClassName="@debug">
-    <Rule color="@Colors.Gray"
+    <Rule color="@Colors.AliceBlue"
           />
 </Styled>
 <Styled @bind-ClassName="@info">
@@ -37,141 +37,140 @@
           />
 </Styled>
 <Styled @bind-ClassName="@warn">
-    <Rule color="@Colors.Yellow"
-         />
-</Styled><Styled @bind-ClassName="@error">
-    <Rule color="@Colors.Red"
-         />
-</Styled>
-<Styled @bind-ClassName="@cell">
-    <Rule display="@Display.TableCell" />
+    <Rule color="@Colors.Yellow" />
+    </Styled>
+    <Styled @bind-ClassName="@error">
+        <Rule color="@Colors.Red" />
+    </Styled>
+    <Styled @bind-ClassName="@cell">
+        <Rule display="@Display.TableCell" />
 
-</Styled>
-<Styled @bind-ClassName="@timeCell">
-    <Rule width="9%" min_width="24em"/>
-</Styled>
-<Styled @bind-ClassName="@logCell">
-    <Rule width="7%" />
-</Styled>
-<Styled @bind-ClassName="@severityCell">
-    <Rule width="6%" />
-</Styled>
-<Styled @bind-ClassName="@messageCell">
-    <Rule width="78%" />
-</Styled>
+    </Styled>
+    <Styled @bind-ClassName="@timeCell">
+        <Rule width="9%" min_width="12em" />
+    </Styled>
+    <Styled @bind-ClassName="@logCell">
+        <Rule width="7%" />
+    </Styled>
+    <Styled @bind-ClassName="@severityCell">
+        <Rule width="6%" />
+    </Styled>
+    <Styled @bind-ClassName="@messageCell">
+        <Rule width="78%" />
+    </Styled>
 
-<div class="@logPanel" id="logPanel">
-    @foreach (var msg in messages)
-    {
-        <div class="@GetClass(msg) @logRow" id="@msg.Id">
-            <div class="@cell  @timeCell ">
-                @msg.Time
+    <div class="@logPanel" id="logPanel">
+        @foreach (var msg in messages)
+        {
+            <div class="@GetClass(msg) @logRow" id="@msg.Id">
+                <div class="@cell  @timeCell ">
+                    @msg.Time
+                </div>
+                <div class="@cell  @logCell ">
+                    @msg.Logger
+                </div>
+                <div class="@cell  @severityCell ">
+                    @msg.Severity
+                </div>
+                <div class="@cell  @messageCell ">
+                    @msg.Message
+                </div>
+
+
             </div>
-            <div class="@cell  @logCell ">
-                @msg.Logger
-            </div>
-            <div class="@cell  @severityCell ">
-                @msg.Severity
-            </div>
-            <div class="@cell  @messageCell ">
-                @msg.Message
-            </div>
+        }
+        <div id="anchor" class="@anchor"></div>
+    </div>
+
+    @code {
+        private string logPanel;
+        private string debug;
+        private string anchor;
+        private string info;
+        private string warn;
+        private string error;
+        private string cell;
+        private string timeCell;
+        private string logCell;
+        private string severityCell;
+        private string messageCell;
+        private string logRow;
+
+        private Guid _lastElement;
+
+        private List<LogEvent> messages;
+        HubConnection hubConnection;
 
 
-        </div>
-    }
-    <div id="anchor" class="@anchor"></div>
-</div>
+        protected override async Task OnInitializedAsync()
+        {
+            messages = new List<LogEvent>();
 
-@code {
-    private string logPanel;
-    private string debug;
-    private string anchor;
-    private string info;
-    private string warn;
-    private string error;
-    private string cell;
-    private string timeCell;
-    private string logCell;
-    private string severityCell;
-    private string messageCell;
-    private string logRow;
+            Console.WriteLine(navigationManager.ToAbsoluteUri("/loggerHub").ToString());
+            hubConnection = hubConnectionBuilder
+           .WithUrl(navigationManager.ToAbsoluteUri("/loggerHub").ToString())
+          .Build();
 
-    private Guid _lastElement;
+            hubConnection.On<LogEvent>("NewLogEvent", async (evt) =>
+             {
 
-    private List<LogEvent> messages;
-    HubConnection hubConnection;
+                 await AddLogEvent(evt);
+
+             });
+
+            await hubConnection.StartAsync();
+
+        }
+        private string GetClass(LogEvent evt)
+        {
+            switch (evt.Severity)
+            {
+                case Severity.Debug:
+                    return debug;
+                    break;
+
+                case Severity.Warn:
+
+                    return warn;
+                    break;
+                case Severity.Error:
+                    return error;
+                    break;
+                case Severity.Info:
+                default:
+                    return info;
+                    break;
 
 
-    protected override async Task OnInitializedAsync()
-    {
-        messages = new List<LogEvent>();
+            }
+        }
 
-        Console.WriteLine(navigationManager.ToAbsoluteUri("/loggerHub").ToString());
-        hubConnection =hubConnectionBuilder
-       .WithUrl(navigationManager.ToAbsoluteUri("/loggerHub").ToString())
-      .Build();
+        protected async Task AddLogEvent(LogEvent evt)
+        {
+            Console.WriteLine("LogEvent received");
 
-        hubConnection.On<LogEvent>("NewLogEvent",async (evt) =>
+            messages.Add(evt);
+
+            StateHasChanged();
+            //    ScrollToBottom();
+
+            Console.WriteLine("Item added");
+
+        }
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
 
-            await   AddLogEvent(evt);
+            await jsRuntime.InvokeVoidAsync("methods.scrollToAnchor");
 
-        });
 
-        await hubConnection.StartAsync();
 
-    }
-    private string GetClass(LogEvent evt)
-    {
-        switch (evt.Severity)
+
+            await base.OnAfterRenderAsync(firstRender);
+        }
+        private void ScrollToBottom()
         {
-            case Severity.Debug:
-                return debug;
-                break;
 
-            case Severity.Warn:
-
-                return warn;
-                break;
-            case Severity.Error:
-                return error;
-                break;
-            case Severity.Info:
-            default:
-                return info;
-                break;
-
+            //jsRuntime.InvokeVoidAsync("window.scrollTo(0,document.querySelector('#logPanel').scrollHeight);");
 
         }
     }
-
-    protected async Task AddLogEvent(LogEvent evt)
-    {
-        Console.WriteLine("LogEvent received");
-
-        messages.Add(evt);
-
-        StateHasChanged();
-        //    ScrollToBottom();
-
-        Console.WriteLine("Item added");
-
-    }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-
-        await jsRuntime.InvokeVoidAsync("methods.scrollToAnchor");
-
-
-
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-    private void ScrollToBottom()
-    {
-
-        //jsRuntime.InvokeVoidAsync("window.scrollTo(0,document.querySelector('#logPanel').scrollHeight);");
-
-    }
-}

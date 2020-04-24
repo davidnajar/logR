@@ -15,15 +15,24 @@ namespace logR.Server.Controllers
     public class LogsController:ControllerBase
     {
         private readonly ILogProcessor _logProcessor;
+        private readonly ILogStorage _storage;
 
-        public LogsController(ILogProcessor logProcessor)
+        public LogsController(ILogProcessor logProcessor, ILogStorage storage)
         {
             _logProcessor = logProcessor;
+            _storage = storage;
         }
         [HttpPut]
         public void PutLog(LogEvent ect)
         {
             _logProcessor.ProcessLog(ect);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get(string filter)
+        {
+             filter = filter.ToUpper();
+            return Ok(await _storage.SearchLogs(p => p.Message.ToUpper().Contains(filter)));
         }
     }
 }

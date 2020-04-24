@@ -1,7 +1,43 @@
 ﻿@page "/diagnostic"
+@using logR.Shared
+@inject HttpClient Http
 
-    <TextEdit Placeholder="Search in logs" /><Button Color="Color.Primary" IsOutline="true">Search</Button>
+    <Column Class="px-4" ColumnSize="ColumnSize.Is4.OnTablet.Is6.OnWidescreen.Is12.OnMobile">
+        <Addons>
+            <Addon AddonType="AddonType.Body">
+                <TextEdit Placeholder="Search in logs" @bind-Text="filter" />
+            </Addon>
+            <Addon AddonType="AddonType.End">
+                <Button Color="Color.Primary" IsOutline="true" Clicked="@SearchLogs">Search</Button>
+            </Addon>
+        </Addons>
+             
+               
+    </Column>
+       
+        @if (logs != null)
+        {
+            <DataGrid TItem="LogEvent"
+                      Data="@logs" ShowPager="true" PageSize="50"
+                      @bind-SelectedRow="@selectedLog">
+                <DataGridCommandColumn TItem="LogEvent" />
+                <DataGridColumn TItem="LogEvent" Field="@nameof(LogEvent.Vault)" Caption="Application" Sortable="true" />
+                <DataGridColumn TItem="LogEvent" Field="@nameof(LogEvent.Time)" Caption="Time" Sortable="true" />
+                <DataGridColumn TItem="LogEvent" Field="@nameof(LogEvent.Logger)" Caption="Logger" Sortable="true" />
+                <DataGridColumn TItem="LogEvent" Field="@nameof(LogEvent.Severity)" Caption="Severity" Sortable="true" />
+                <DataGridColumn TItem="LogEvent" Field="@nameof(LogEvent.Message)" Caption="Message" Sortable="true" />
 
-@code {
 
-}
+            </DataGrid>
+        }
+
+        @code {
+            private string filter;
+            private LogEvent[] logs;
+            private LogEvent selectedLog;
+
+            public async Task SearchLogs()
+            {
+                logs = await Http.GetJsonAsync<LogEvent[]>("/logs?filter=" + filter);
+            }
+        }

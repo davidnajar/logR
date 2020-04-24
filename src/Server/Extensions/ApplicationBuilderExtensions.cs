@@ -9,7 +9,7 @@ namespace logR.Server.Extensions
 {
     public static class ApplicationBuilderExtensions
     {
-        public static IApplicationBuilder UseLogServerReceiver(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseLogServerReceiver(this IApplicationBuilder builder, IServiceProvider serviceProvider)
         {
             var service = builder.ApplicationServices.GetService(typeof(LogServerReceiver)) as LogServerReceiver;
             service.Start();
