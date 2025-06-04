@@ -191,10 +191,10 @@ namespace logR.Server.Services.Gateways.UDP
         }
         XmlSchema GetSchema()
         {
-            XmlSchema xsd = new XmlSchema();
+            XmlSchema xsd;
             using (var s = new StringReader(log4netXsd.Log4NetSchema))
             {
-                XmlSchema.Read(s, new ValidationEventHandler(ValidationCallBack));
+                xsd = XmlSchema.Read(s, new ValidationEventHandler(ValidationCallBack));
             }
             return xsd;
         }
