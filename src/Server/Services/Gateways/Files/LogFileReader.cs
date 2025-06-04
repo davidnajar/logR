@@ -56,7 +56,8 @@ namespace logR.Server.Services
             {
 
                 var b = new byte[length - offset];
-                f.Read(b, (int)offset,(int)( b.Length));
+                f.Seek(offset, SeekOrigin.Begin);
+                f.Read(b, 0, b.Length);
                 using (var ms = new MemoryStream(b))
                 using (var t = XmlReader.Create(ms, new XmlReaderSettings() { }))
                 {
@@ -78,11 +79,12 @@ namespace logR.Server.Services
                
 
                 using (var f = File.OpenRead(e.FullPath))
-               
+
                 {
 
                     var b = new byte[f.Length - bytes];
-                    f.Read(b,(int) bytes, b.Length);
+                    f.Seek(bytes, SeekOrigin.Begin);
+                    f.Read(b, 0, b.Length);
                     using (var ms = new MemoryStream(b))
                     using (var t = XmlReader.Create(ms))
                     {
